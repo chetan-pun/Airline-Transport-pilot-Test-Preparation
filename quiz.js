@@ -7,12 +7,6 @@ let userAnswers = {};
 let quizQuestions = [];
 let showingResults = false;
 
-const STORAGE_KEYS = {
-    SETS_PROGRESS: 'atp_sets_progress',
-    SET_ANSWERS: 'atp_set_',
-    SET_CURRENT: 'atp_set_current_'
-};
-
 // Initialize quiz
 document.addEventListener('DOMContentLoaded', async () => {
     // Get set number from URL
@@ -21,9 +15,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Load questions
     await loadQuestions();
-    
-    // Load saved progress
-    loadSavedProgress();
     
     // Initialize UI
     initializeQuiz();
@@ -50,54 +41,6 @@ async function loadQuestions() {
     }
 }
 
-function loadSavedProgress() {
-    // Load saved answers
-    const savedAnswers = localStorage.getItem(STORAGE_KEYS.SET_ANSWERS + currentSetNumber + '_answers');
-    if (savedAnswers) {
-        userAnswers = JSON.parse(savedAnswers);
-    }
-    
-    // Load current question
-    const savedCurrent = localStorage.getItem(STORAGE_KEYS.SET_CURRENT + currentSetNumber);
-    if (savedCurrent) {
-        currentQuestionIndex = parseInt(savedCurrent);
-    }
-}
-
-function saveProgress() {
-    // Save answers
-    localStorage.setItem(
-        STORAGE_KEYS.SET_ANSWERS + currentSetNumber + '_answers',
-        JSON.stringify(userAnswers)
-    );
-    
-    // Save current question
-    localStorage.setItem(
-        STORAGE_KEYS.SET_CURRENT + currentSetNumber,
-        currentQuestionIndex.toString()
-    );
-    
-    // Update sets progress
-    updateSetsProgress('in-progress');
-}
-
-function updateSetsProgress(status, results = null) {
-    const setsProgress = JSON.parse(localStorage.getItem(STORAGE_KEYS.SETS_PROGRESS) || '{}');
-    
-    setsProgress[currentSetNumber] = {
-        status: status,
-        currentQuestion: currentQuestionIndex + 1,
-        lastUpdated: new Date().toISOString()
-    };
-    
-    if (results) {
-        setsProgress[currentSetNumber].correct = results.correct;
-        setsProgress[currentSetNumber].incorrect = results.incorrect;
-        setsProgress[currentSetNumber].total = results.total;
-    }
-    
-    localStorage.setItem(STORAGE_KEYS.SETS_PROGRESS, JSON.stringify(setsProgress));
-}
 
 function initializeQuiz() {
     document.getElementById('setTitle').textContent = `Set ${currentSetNumber}`;
@@ -128,61 +71,29 @@ function displayQuestion() {
         `Question ${currentQuestionIndex + 1}`;
     document.getElementById('questionText').textContent = question.question;
     
-    // Display options
+    // Display options (fresh start, no previous answers shown)
     const optionsSection = document.getElementById('optionsSection');
     optionsSection.innerHTML = '';
     
     const letters = ['A', 'B', 'C', 'D'];
-    const hasAnswered = userAnswers[question.sn] !== undefined;
-    const isAnswerCorrect = hasAnswered && userAnswers[question.sn] === question.answer;
     
     question.options.forEach((option, index) => {
         const optionCard = document.createElement('div');
         optionCard.className = 'option-card';
         optionCard.dataset.answer = letters[index];
         
-        // Check if this option was selected
-        const isSelected = userAnswers[question.sn] === letters[index];
-        const isCorrectAnswer = letters[index] === question.answer;
-        
-        if (hasAnswered) {
-            // Show feedback if already answered
-            if (isSelected) {
-                if (isCorrectAnswer) {
-                    optionCard.classList.add('correct', 'selected');
-                } else {
-                    optionCard.classList.add('incorrect', 'selected');
-                }
-            } else if (isCorrectAnswer && isAnswerCorrect) {
-                // Only show correct answer highlight if user got it right
-                optionCard.classList.add('correct');
-            }
-            
-            // Only disable if answer is correct
-            if (isAnswerCorrect) {
-                optionCard.classList.add('disabled');
-            }
-        }
-        
         optionCard.innerHTML = `
             <div class="option-letter">${letters[index]}</div>
             <div class="option-text">${option}</div>
         `;
         
-        // Allow clicking unless the correct answer has been selected
-        if (!isAnswerCorrect) {
-            optionCard.addEventListener('click', () => selectOption(letters[index], question.sn, question.answer));
-        }
+        optionCard.addEventListener('click', () => selectOption(letters[index], question.sn, question.answer));
         
         optionsSection.appendChild(optionCard);
     });
     
-    // Show feedback message if already answered
-    if (hasAnswered) {
-        showFeedback(question);
-    } else {
-        removeFeedback();
-    }
+    // Remove any previous feedback
+    removeFeedback();
     
     // Update navigation buttons
     document.getElementById('prevBtn').disabled = currentQuestionIndex === 0;
@@ -199,9 +110,8 @@ function selectOption(selectedAnswer, questionSN, correctAnswer) {
     const question = quizQuestions[currentQuestionIndex];
     const isCorrect = selectedAnswer === correctAnswer;
     
-    // Save answer
+    // Save answer (in memory only)
     userAnswers[questionSN] = selectedAnswer;
-    saveProgress();
     
     // Update all option cards to show feedback
     const allOptions = document.querySelectorAll('.option-card');
@@ -288,6 +198,9 @@ function removeFeedback() {
 function previousQuestion() {
     if (currentQuestionIndex > 0) {
         currentQuestionIndex--;
+        // Clear the answer for the previous question
+        const question = quizQuestions[currentQuestionIndex];
+        delete userAnswers[question.sn];
         displayQuestion();
     }
 }
@@ -320,9 +233,6 @@ function showResults() {
     
     const total = quizQuestions.length;
     const percentage = Math.round((correct / total) * 100);
-    
-    // Update sets progress
-    updateSetsProgress('completed', { correct, incorrect, total });
     
     // Hide quiz content
     document.getElementById('quizContent').style.display = 'none';
@@ -398,17 +308,10 @@ function displayReview() {
 }
 
 function retrySet() {
-    // Clear saved progress for this set
-    localStorage.removeItem(STORAGE_KEYS.SET_ANSWERS + currentSetNumber + '_answers');
-    localStorage.removeItem(STORAGE_KEYS.SET_CURRENT + currentSetNumber);
-    
     // Reset variables
     userAnswers = {};
     currentQuestionIndex = 0;
     showingResults = false;
-    
-    // Update progress
-    updateSetsProgress('not-started');
     
     // Show quiz content
     document.getElementById('quizContent').style.display = 'block';
