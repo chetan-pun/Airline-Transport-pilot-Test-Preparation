@@ -406,7 +406,12 @@ header h1 {
 
 .option-card.disabled {
     cursor: not-allowed;
-    opacity: 0.7;
+    pointer-events: none;
+}
+
+.option-card.disabled:hover {
+    transform: none;
+    box-shadow: none;
 }
 
 .option-letter {
@@ -435,6 +440,69 @@ header h1 {
     flex: 1;
     font-size: 1rem;
     line-height: 1.5;
+}
+
+.feedback-section {
+    margin-top: 25px;
+    margin-bottom: 25px;
+    padding: 25px;
+    border-radius: 12px;
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    animation: slideIn 0.4s ease;
+}
+
+.feedback-correct {
+    background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+    border: 2px solid var(--success-color);
+}
+
+.feedback-incorrect {
+    background: linear-gradient(135deg, #fee2e2, #fecaca);
+    border: 2px solid var(--danger-color);
+}
+
+.feedback-icon {
+    font-size: 2.5rem;
+    flex-shrink: 0;
+}
+
+.feedback-content {
+    flex: 1;
+}
+
+.feedback-content h3 {
+    margin: 0 0 10px 0;
+    font-size: 1.4rem;
+    color: var(--text-primary);
+}
+
+.feedback-text {
+    margin: 0 0 12px 0;
+    color: var(--text-secondary);
+    font-size: 1rem;
+}
+
+.correct-answer-display {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    border-left: 4px solid var(--success-color);
+    margin-top: 10px;
+}
+
+.correct-answer-display strong {
+    color: var(--success-color);
+    font-size: 1.05rem;
+    line-height: 1.6;
+}
+
+.retry-hint {
+    margin-top: 15px;
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    font-style: italic;
 }
 
 .navigation-buttons {
@@ -676,5 +744,18 @@ header h1 {
     .header-left, .header-right {
         flex-direction: column;
         width: 100%;
+    }
+
+    .feedback-section {
+        flex-direction: column;
+        padding: 20px;
+    }
+
+    .feedback-icon {
+        font-size: 2rem;
+    }
+
+    .feedback-content h3 {
+        font-size: 1.2rem;
     }
 }

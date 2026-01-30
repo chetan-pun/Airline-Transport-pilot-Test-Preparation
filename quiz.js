@@ -133,14 +133,35 @@ function displayQuestion() {
     optionsSection.innerHTML = '';
     
     const letters = ['A', 'B', 'C', 'D'];
+    const hasAnswered = userAnswers[question.sn] !== undefined;
+    const isAnswerCorrect = hasAnswered && userAnswers[question.sn] === question.answer;
+    
     question.options.forEach((option, index) => {
         const optionCard = document.createElement('div');
         optionCard.className = 'option-card';
         optionCard.dataset.answer = letters[index];
         
         // Check if this option was selected
-        if (userAnswers[question.sn] === letters[index]) {
-            optionCard.classList.add('selected');
+        const isSelected = userAnswers[question.sn] === letters[index];
+        const isCorrectAnswer = letters[index] === question.answer;
+        
+        if (hasAnswered) {
+            // Show feedback if already answered
+            if (isSelected) {
+                if (isCorrectAnswer) {
+                    optionCard.classList.add('correct', 'selected');
+                } else {
+                    optionCard.classList.add('incorrect', 'selected');
+                }
+            } else if (isCorrectAnswer && isAnswerCorrect) {
+                // Only show correct answer highlight if user got it right
+                optionCard.classList.add('correct');
+            }
+            
+            // Only disable if answer is correct
+            if (isAnswerCorrect) {
+                optionCard.classList.add('disabled');
+            }
         }
         
         optionCard.innerHTML = `
@@ -148,9 +169,20 @@ function displayQuestion() {
             <div class="option-text">${option}</div>
         `;
         
-        optionCard.addEventListener('click', () => selectOption(optionCard, letters[index], question.sn));
+        // Allow clicking unless the correct answer has been selected
+        if (!isAnswerCorrect) {
+            optionCard.addEventListener('click', () => selectOption(letters[index], question.sn, question.answer));
+        }
+        
         optionsSection.appendChild(optionCard);
     });
+    
+    // Show feedback message if already answered
+    if (hasAnswered) {
+        showFeedback(question);
+    } else {
+        removeFeedback();
+    }
     
     // Update navigation buttons
     document.getElementById('prevBtn').disabled = currentQuestionIndex === 0;
@@ -163,17 +195,94 @@ function displayQuestion() {
     }
 }
 
-function selectOption(optionCard, answer, questionSN) {
-    // Remove previous selection
-    const allOptions = document.querySelectorAll('.option-card');
-    allOptions.forEach(opt => opt.classList.remove('selected'));
-    
-    // Add selection to clicked option
-    optionCard.classList.add('selected');
+function selectOption(selectedAnswer, questionSN, correctAnswer) {
+    const question = quizQuestions[currentQuestionIndex];
+    const isCorrect = selectedAnswer === correctAnswer;
     
     // Save answer
-    userAnswers[questionSN] = answer;
+    userAnswers[questionSN] = selectedAnswer;
     saveProgress();
+    
+    // Update all option cards to show feedback
+    const allOptions = document.querySelectorAll('.option-card');
+    allOptions.forEach(opt => {
+        const optAnswer = opt.dataset.answer;
+        
+        // Remove previous selection classes
+        opt.classList.remove('selected', 'incorrect', 'correct');
+        
+        if (optAnswer === selectedAnswer) {
+            opt.classList.add('selected');
+            if (isCorrect) {
+                opt.classList.add('correct');
+                // Disable all options if correct
+                opt.classList.add('disabled');
+            } else {
+                opt.classList.add('incorrect');
+            }
+        } else if (isCorrect && optAnswer === correctAnswer) {
+            // Only show correct answer when user gets it right
+            opt.classList.add('correct', 'disabled');
+        }
+    });
+    
+    // Disable all options if correct answer is selected
+    if (isCorrect) {
+        allOptions.forEach(opt => opt.classList.add('disabled'));
+    }
+    
+    // Show feedback message
+    showFeedback(question);
+}
+
+function showFeedback(question) {
+    const userAnswer = userAnswers[question.sn];
+    const isCorrect = userAnswer === question.answer;
+    
+    // Remove existing feedback
+    removeFeedback();
+    
+    // Create feedback section
+    const feedbackDiv = document.createElement('div');
+    feedbackDiv.className = `feedback-section ${isCorrect ? 'feedback-correct' : 'feedback-incorrect'}`;
+    feedbackDiv.id = 'feedbackSection';
+    
+    if (isCorrect) {
+        feedbackDiv.innerHTML = `
+            <div class="feedback-icon">✅</div>
+            <div class="feedback-content">
+                <h3>Correct!</h3>
+                <p>Great job! You selected the right answer. Click "Next" to continue.</p>
+            </div>
+        `;
+    } else {
+        const letters = ['A', 'B', 'C', 'D'];
+        const correctIndex = letters.indexOf(question.answer);
+        const correctOption = question.options[correctIndex];
+        
+        feedbackDiv.innerHTML = `
+            <div class="feedback-icon">❌</div>
+            <div class="feedback-content">
+                <h3>Incorrect - Try Again!</h3>
+                <p class="feedback-text">That's not correct. The right answer is:</p>
+                <div class="correct-answer-display">
+                    <strong>${correctOption}</strong>
+                </div>
+                <p class="retry-hint">💡 You can select another option to try again!</p>
+            </div>
+        `;
+    }
+    
+    // Insert feedback after options section
+    const optionsSection = document.getElementById('optionsSection');
+    optionsSection.parentNode.insertBefore(feedbackDiv, optionsSection.nextSibling);
+}
+
+function removeFeedback() {
+    const existingFeedback = document.getElementById('feedbackSection');
+    if (existingFeedback) {
+        existingFeedback.remove();
+    }
 }
 
 function previousQuestion() {
