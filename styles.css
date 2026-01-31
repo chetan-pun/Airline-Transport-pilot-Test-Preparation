@@ -104,6 +104,13 @@ header h1 {
     box-shadow: var(--shadow-lg);
 }
 
+.section-description {
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
 .section-header {
     display: flex;
     justify-content: space-between;

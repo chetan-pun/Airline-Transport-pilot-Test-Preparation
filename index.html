@@ -18,9 +18,33 @@
                 <div class="section-header">
                     <h2>Question Sets</h2>
                 </div>
+                <p class="section-description">Practice questions organized by serial number. No progress saved.</p>
                 <div class="sets-grid" id="setsGrid">
                     <!-- Sets will be dynamically generated -->
                 </div>
+            </div>
+            <div class="sets-section">
+                <div class="section-header">
+                    <h2>Practice Tests</h2>
+                    <button class="btn btn-danger" id="clearTestsBtn">Clear Test Data</button>
+                </div>
+                <p class="section-description">Take random 100-question tests. Your progress is saved automatically.</p>
+                <div class="sets-grid" id="testsGrid">
+                    <!-- Tests will be dynamically generated -->
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+
+    <div id="confirmModal" class="modal">
+        <div class="modal-content">
+            <h3>Clear All Test Data?</h3>
+            <p>This will delete all your test progress and scores. This action cannot be undone.</p>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="cancelBtn">Cancel</button>
+                <button class="btn btn-danger" id="confirmClearBtn">Clear Everything</button>
             </div>
         </div>
     </div>
