@@ -9,7 +9,8 @@
 <body>
     <div class="container">
         <header>
-            <h1>✈️ Airline Transport Pilot Test Preparation</h1>
+            <p class="eyebrow">Airline Transport Pilot Prep</p>
+            <h1>Train Against the Full ATP Question Bank</h1>
             <p class="subtitle">Master your ATP exam with 1831 practice questions</p>
         </header>
 
@@ -34,6 +35,44 @@
                 </div>
             </div>
 
+            <div class="sets-section notes-section">
+                <div class="section-header">
+                    <h2>Study Notes</h2>
+                </div>
+                <p class="section-description">Review the scanned notes in numbered pages based on the original source markers.</p>
+                <div class="notes-shell">
+                    <aside class="notes-sidebar" aria-label="Notes pages">
+                        <div class="notes-sidebar-header">
+                            <p class="notes-kicker">Scanned Material</p>
+                            <h3>Browse By Page</h3>
+                            <p>Jump directly to the original page numbers from output.txt.</p>
+                        </div>
+                        <div class="notes-page-list" id="notesPageList"></div>
+                    </aside>
+
+                    <div class="notes-reader">
+                        <div class="notes-toolbar">
+                            <div class="notes-toolbar-copy">
+                                <span class="notes-chip" id="notesPageMeta">Loading notes...</span>
+                                <span class="notes-chip subtle" id="notesPageStatus">Preparing scanned pages</span>
+                            </div>
+                            <div class="notes-toolbar-actions">
+                                <button class="btn btn-secondary notes-nav-btn" id="prevNotePageBtn" type="button">Previous</button>
+                                <button class="btn btn-primary notes-nav-btn" id="nextNotePageBtn" type="button">Next</button>
+                            </div>
+                        </div>
+
+                        <article class="notes-paper" aria-live="polite">
+                            <div class="notes-paper-header">
+                                <span class="notes-paper-label">Study Notes</span>
+                                <h3 id="notesPageTitle">Page 1</h3>
+                            </div>
+                            <pre class="notes-page-content" id="notesPageContent"></pre>
+                        </article>
+                    </div>
+                </div>
+            </div>
+
 
         </div>
     </div>
@@ -49,6 +88,7 @@
         </div>
     </div>
 
+    <script src="notes-data.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
